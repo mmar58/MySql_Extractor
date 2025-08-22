@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MySQL Exporter</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body { font-family: Arial; margin: 2em; }
+    input, button { margin: 0.5em; }
+    .result { margin-top: 2em; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <h1>MySQL Exporter</h1>
+  <form id="dbForm">
+    <label>Host: <input name="host" required value="localhost"></label><br>
+    <label>User: <input name="user" required value="root"></label><br>
+    <label>Password: <input name="password" type="password"></label><br>
+    <label>Database: <input name="database" required></label><br>
+    <label>Port: <input name="port" type="number" value="3306"></label><br>
+    <button type="submit">Export Tables</button>
+  </form>
+  <div class="result" id="result"></div>
+  <script>
+    const socket = io();
+    const form = document.getElementById('dbForm');
+    const resultDiv = document.getElementById('result');
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      resultDiv.innerHTML = 'Exporting...';
+      const data = Object.fromEntries(new FormData(form));
+      data.port = parseInt(data.port);
+      socket.emit('export-db', data);
+    };
+    socket.on('export-result', res => {
+      if (res.success) {
+        resultDiv.innerHTML = '<div class="success">Export successful!</div>' +
+          '<ul>' + res.results.map(r =>
+            `<li>${r.table}: <a href="/${r.structureFile}" download>Structure</a>` +
+            (r.dataFile ? ` | <a href="/${r.dataFile}" download>Data</a>` : '') +
+            '</li>'
+          ).join('') + '</ul>';
+      } else {
+        resultDiv.innerHTML = `<div class="error">Error: ${res.error}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>
