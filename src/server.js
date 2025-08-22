@@ -10,6 +10,15 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import archiver from 'archiver';
 // Endpoint to download all generated SQL files as a zip
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 app.get('/download-all-sql', async (req, res) => {
   const sqlDir = path.join(__dirname, '../public/generated_sql');
   try {
@@ -29,15 +38,6 @@ app.get('/download-all-sql', async (req, res) => {
     res.status(500).send('Failed to create zip: ' + err.message);
   }
 });
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
 
 // Socket.io connection
 io.on('connection', (socket) => {
