@@ -22,6 +22,7 @@
     <label>Port: <input name="port" type="number" value="3306"></label><br>
     <button type="submit">Export Tables</button>
   </form>
+  <button id="downloadAllBtn" type="button">Download All SQL Files (ZIP)</button>
   <button id="deleteAllBtn" type="button">Delete All SQL Files</button>
   <div class="result" id="result"></div>
   <script>
@@ -36,6 +37,9 @@
       socket.emit('export-db', data);
     };
 
+    document.getElementById('downloadAllBtn').onclick = function() {
+      window.location = '/download-all-sql';
+    };
     document.getElementById('deleteAllBtn').onclick = function() {
       if (confirm('Are you sure you want to delete all generated SQL files?')) {
         socket.emit('delete-all-sql');

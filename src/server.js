@@ -1,4 +1,5 @@
 
+
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -7,6 +8,27 @@ import fs from 'fs/promises';
 import path from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import archiver from 'archiver';
+// Endpoint to download all generated SQL files as a zip
+app.get('/download-all-sql', async (req, res) => {
+  const sqlDir = path.join(__dirname, '../public/generated_sql');
+  try {
+    const files = await fs.readdir(sqlDir);
+    if (!files.length) {
+      return res.status(404).send('No SQL files to download.');
+    }
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="all_sql_files.zip"');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.pipe(res);
+    for (const file of files) {
+      archive.file(path.join(sqlDir, file), { name: file });
+    }
+    await archive.finalize();
+  } catch (err) {
+    res.status(500).send('Failed to create zip: ' + err.message);
+  }
+});
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
