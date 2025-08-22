@@ -22,6 +22,7 @@
     <label>Port: <input name="port" type="number" value="3306"></label><br>
     <button type="submit">Export Tables</button>
   </form>
+  <button id="deleteAllBtn" type="button">Delete All SQL Files</button>
   <div class="result" id="result"></div>
   <script>
     const socket = io();
@@ -34,6 +35,13 @@
       data.port = parseInt(data.port);
       socket.emit('export-db', data);
     };
+
+    document.getElementById('deleteAllBtn').onclick = function() {
+      if (confirm('Are you sure you want to delete all generated SQL files?')) {
+        socket.emit('delete-all-sql');
+      }
+    };
+
     socket.on('export-result', res => {
       if (res.success) {
         resultDiv.innerHTML = '<div class="success">Export successful!</div>' +
@@ -44,6 +52,14 @@
           ).join('') + '</ul>';
       } else {
         resultDiv.innerHTML = `<div class="error">Error: ${res.error}</div>`;
+      }
+    });
+
+    socket.on('delete-all-sql-result', res => {
+      if (res.success) {
+        resultDiv.innerHTML = '<div class="success">All generated SQL files deleted.</div>';
+      } else {
+        resultDiv.innerHTML = `<div class="error">Delete failed: ${res.error}</div>`;
       }
     });
   </script>

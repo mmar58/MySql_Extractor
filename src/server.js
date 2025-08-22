@@ -62,6 +62,19 @@ io.on('connection', (socket) => {
       socket.emit('export-result', { success: false, error: error.message });
     }
   });
+
+  socket.on('delete-all-sql', async () => {
+    const sqlDir = path.join(__dirname, '../public/generated_sql');
+    try {
+      const files = await fs.readdir(sqlDir);
+      for (const file of files) {
+        await fs.unlink(path.join(sqlDir, file));
+      }
+      socket.emit('delete-all-sql-result', { success: true });
+    } catch (error) {
+      socket.emit('delete-all-sql-result', { success: false, error: error.message });
+    }
+  });
 });
 
 const PORT = process.env.PORT || 3000;
